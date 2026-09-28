@@ -17,9 +17,7 @@ vi.mock('./reputation', () => ({
   VOUCH_TTL_SECS: 604_800,
 }));
 vi.mock('./registry', () => ({ reverseHandle: reverseHandleMock }));
-vi.mock('./push', () => ({ subscribeToPush: vi.fn() }));
-
-import { addMyVouch, getOwedBonuses } from './myvouches';
+import { addMyVouch, getMyVouches, getOwedBonuses } from './myvouches';
 
 const ME = 'GME';
 const OTHER_WALLET = 'GOTHER';
@@ -157,5 +155,24 @@ describe('getOwedBonuses', () => {
     pending.set(BOB, [{ voucher: ME, amount: 5 }]);
     reverseHandleMock.mockRejectedValue(new Error('registry down'));
     expect(await getOwedBonuses(ME)).toMatchObject([{ claimer: BOB, handle: null }]);
+  });
+
+  it('handles throwing localStorage getter gracefully in getMyVouches and addMyVouch', () => {
+    const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    Object.defineProperty(window, 'localStorage', {
+      get() {
+        throw new DOMException('SecurityError', 'SecurityError');
+      },
+      configurable: true,
+    });
+
+    try {
+      expect(getMyVouches()).toEqual([]);
+      expect(() => addMyVouch({ id: 99, secret: 's', note: 'test', created: 0 })).not.toThrow();
+    } finally {
+      if (original) {
+        Object.defineProperty(window, 'localStorage', original);
+      }
+    }
   });
 });

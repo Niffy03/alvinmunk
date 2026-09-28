@@ -21,6 +21,7 @@ import {
 
 } from '@stellar/freighter-api';
 import { config, networkPassphrase, waitForAccountReady, server } from './stellar';
+import { getItem, setItem } from './storage';
 
 export type WalletKind = 'passkey' | 'dev' | 'freighter' | 'albedo' | 'kit';
 
@@ -375,8 +376,8 @@ export async function connectPasskey(): Promise<Wallet> {
 // ── helpers ──
 
 function safeLocalGet(k: string): string | null {
-  return typeof localStorage !== 'undefined' ? localStorage.getItem(k) : null;
+  return getItem(k);
 }
 function safeLocalSet(k: string, v: string): void {
-  if (typeof localStorage !== 'undefined') localStorage.setItem(k, v);
+  setItem(k, v);
 }

@@ -41,4 +41,29 @@ describe('fetchLeaderboard', () => {
       { address: 'B', score: 5, rank: 3, flagged: false },
     ]);
   });
+
+  it('completes fetchLeaderboard even when localStorage getter or setter throws', async () => {
+    vi.mocked(fetchReputationEvents).mockResolvedValue([
+      { topics: [EVENTS.SOCIAL, 'A'], data: [0, 15], ledger: 200 },
+    ] as any);
+
+    const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    Object.defineProperty(window, 'localStorage', {
+      get() {
+        throw new DOMException('SecurityError', 'SecurityError');
+      },
+      configurable: true,
+    });
+
+    try {
+      const result = await fetchLeaderboard();
+      expect(result).toEqual([
+        { address: 'A', score: 15, rank: 1, flagged: false },
+      ]);
+    } finally {
+      if (original) {
+        Object.defineProperty(window, 'localStorage', original);
+      }
+    }
+  });
 });
