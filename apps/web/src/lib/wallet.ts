@@ -28,7 +28,7 @@ import {
 
 } from '@stellar/freighter-api';
 import { config, networkPassphrase, waitForAccountReady, server } from './stellar';
-import { getItem, setItem } from './storage';
+import { getItem, setItem, remove } from './storage';
 
 export type WalletKind = 'passkey' | 'dev' | 'freighter' | 'albedo' | 'kit';
 
@@ -581,5 +581,5 @@ function safeLocalSet(k: string, v: string): void {
   setItem(k, v);
 }
 function safeLocalRemove(k: string): void {
-  if (typeof localStorage !== 'undefined') localStorage.removeItem(k);
+  remove(k);
 }

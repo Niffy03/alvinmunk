@@ -8,8 +8,11 @@
 
 function getStorage(): Storage | null {
   try {
-    if (typeof window === 'undefined') return null;
-    return window.localStorage;
+    // The bare identifier (not `window.localStorage`): SSR/Node has no `localStorage`
+    // global at all (ReferenceError, caught below), while a stubbed/blocked accessor
+    // (tests, sandboxed iframes) is reachable this way in every runtime, `window`-less
+    // Node test environments included.
+    return typeof localStorage === 'undefined' ? null : localStorage;
   } catch {
     return null;
   }
